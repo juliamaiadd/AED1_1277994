@@ -1,0 +1,117 @@
+/* 
+Disciplina  : Algortimo e Estrutura de Dados 2026S1
+Nome        : Julia Maia
+Linguagem   : C
+Problema    : https://judge.beecrowd.com/pt/problems/view/1068
+Data        : 01/09/2026
+Objetivo    : detectar se existe um ciclo (loop) em uma lista de dependências entre documentos
+Dificuldade : utilizar dsf
+Uso de IA   : Para verificacao de erros.
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define maxn 10005
+#define maxm 30005
+
+/* lista de adjacencia usando arrays (mais rapido que ponteiros) */
+int head[maxn];
+int to[maxm];
+int nxt[maxm];
+int edge_cnt;
+
+/* estados: 0 = nao visitado, 1 = visitando, 2 = visitado */
+int state[maxn];
+
+/* adiciona aresta u -> v na lista de adjacencia */
+void add_edge(int u, int v) {
+    to[edge_cnt] = v;        /* destino da aresta */
+    nxt[edge_cnt] = head[u]; /* encadeia com a lista atual de u */
+    head[u] = edge_cnt++;    /* atualiza o inicio da lista de u */
+}
+
+/* dfs iterativa para evitar stack overflow com n ate 10^4 */
+int has_cycle(int n) {
+    /* pilha explicita com iterador de arestas por no */
+    int *stack_node = (int *)malloc(sizeof(int) * (n + 1));
+    int *stack_edge = (int *)malloc(sizeof(int) * (n + 1));
+
+    /* percorre todos os nos pois o grafo pode ser desconexo */
+    for (int start = 1; start <= n; start++) {
+        if (state[start] != 0) continue; /* ja processado */
+
+        int top = 0;
+        stack_node[top] = start;      /* empilha o no inicial */
+        stack_edge[top] = head[start];/* iterador comeca na primeira aresta */
+        state[start] = 1;             /* marca como visitando */
+
+        while (top >= 0) {
+            int u = stack_node[top];  /* no atual no topo da pilha */
+            int e = stack_edge[top];  /* proxima aresta a explorar */
+
+            if (e == -1) {
+                /* terminou de explorar todas as arestas de u */
+                state[u] = 2;         /* marca como totalmente processado */
+                top--;                /* desempilha */
+                continue;
+            }
+
+            /* avanca o iterador de u para a proxima aresta */
+            stack_edge[top] = nxt[e];
+
+            int v = to[e];            /* vizinho da aresta atual */
+            if (state[v] == 1) {
+                /* vizinho ainda na pilha => encontrou ciclo */
+                free(stack_node);
+                free(stack_edge);
+                return 1;
+            }
+            if (state[v] == 0) {
+                /* vizinho nao visitado: empilha para explorar */
+                state[v] = 1;
+                top++;
+                stack_node[top] = v;
+                stack_edge[top] = head[v];
+            }
+            /* se state[v] == 2, ja foi processado: ignora */
+        }
+    }
+
+    free(stack_node);
+    free(stack_edge);
+    return 0; /* nenhum ciclo encontrado */
+}
+
+int main() {
+    int t;
+    if (scanf("%d", &t) != 1) return 0; /* numero de casos de teste */
+
+    while (t--) {
+        int n, m;
+        scanf("%d %d", &n, &m); /* n documentos, m dependencias */
+
+        /* inicializa estruturas para cada caso */
+        for (int i = 1; i <= n; i++) {
+            head[i] = -1;  /* sem arestas saindo */
+            state[i] = 0;  /* todos nao visitados */
+        }
+        edge_cnt = 0;      /* zera contador de arestas */
+
+        for (int i = 0; i < m; i++) {
+            int a, b;
+            scanf("%d %d", &a, &b);
+            /* a depende de b => aresta a -> b */
+            add_edge(a, b);
+        }
+
+        /* imprime sim se houver ciclo, nao caso contrario */
+        if (has_cycle(n))
+            printf("SIM\n");
+        else
+            printf("NAO\n");
+    }
+
+    return 0;
+}
