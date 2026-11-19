@@ -2,7 +2,7 @@
 Disciplina  : Algortimo e Estrutura de Dados 2026S1
 Nome        : Julia Maia
 Linguagem   : C
-Problema    : https://judge.beecrowd.com/pt/problems/view/1068
+Problema    : https://judge.beecrowd.com/pt/problems/view/1610
 Data        : 01/09/2026
 Objetivo    : detectar se existe um ciclo (loop) em uma lista de dependências entre documentos
 Dificuldade : utilizar dsf
